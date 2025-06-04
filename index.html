@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartBuild Fencing Calculator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light background */
+        }
+        /* Custom styles for better button appearance */
+        .btn-primary {
+            background-color: #4CAF50; /* Green */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary:hover {
+            background-color: #45a049; /* Darker green on hover */
+            transform: translateY(-1px);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-2xl border border-gray-200">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">SmartBuild Fencing Calculator</h1>
+
+        <div class="space-y-6">
+            <!-- Side Length Inputs -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="side1-length" class="block text-sm font-medium text-gray-700 mb-1">Side 1 Length</label>
+                    <input type="number" id="side1-length" placeholder="e.g., 10" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out">
+                </div>
+                <div>
+                    <label for="side2-length" class="block text-sm font-medium text-gray-700 mb-1">Side 2 Length (Optional)</label>
+                    <input type="number" id="side2-length" placeholder="e.g., 5" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out">
+                </div>
+                <div>
+                    <label for="side3-length" class="block text-sm font-medium text-gray-700 mb-1">Side 3 Length (Optional)</label>
+                    <input type="number" id="side3-length" placeholder="e.g., 8" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out">
+                </div>
+            </div>
+
+            <!-- Unit Type Selection -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Select Unit Type</label>
+                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="radio" name="unit-type" value="feet-inches" checked class="form-radio h-5 w-5 text-blue-600 border-gray-300 rounded-full focus:ring-blue-500">
+                        <span class="ml-2 text-gray-800">Feet / Inches</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="radio" name="unit-type" value="metres-cm" class="form-radio h-5 w-5 text-blue-600 border-gray-300 rounded-full focus:ring-blue-500">
+                        <span class="ml-2 text-gray-800">Metres / CM</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Additional Length Inputs (Feet/Inches or CM) -->
+            <div id="additional-length-inputs" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- These inputs will be dynamically updated by JavaScript -->
+            </div>
+
+            <!-- Panel Type Selection -->
+            <div>
+                <label for="panel-type" class="block text-sm font-medium text-gray-700 mb-2">Select Panel Type</label>
+                <select id="panel-type" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out">
+                    <option value="">-- Please Select --</option>
+                    <option value="close-board-concrete">Close board panels (concrete posts & gravel boards) - £150.00 / panel</option>
+                    <option value="close-board-timber">Close board panels (timber posts & gravel boards) - £120.00 / panel</option>
+                    <option value="traditional-concrete">Traditional close boarding (concrete posts & gravel boards) - £130.00 / metre</option>
+                    <option value="traditional-timber">Traditional close boarding (timber posts & gravel boards) - £100.00 / metre</option>
+                    <option value="overlap-concrete">Standard overlap panels (concrete posts & gravel boards) - £120.00 / panel</option>
+                    <option value="overlap-timber">Standard overlap panels (timber posts & gravel boards) - £100.00 / panel</option>
+                </select>
+            </div>
+
+            <!-- Calculate Button -->
+            <button id="calculate-btn" class="btn-primary w-full mt-6">Calculate Price</button>
+
+            <!-- Results Display -->
+            <div id="results" class="bg-gray-50 p-6 rounded-lg shadow-inner mt-8 hidden">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Calculation Results:</h2>
+                <p class="text-gray-700 mb-2"><strong>Total Fencing Length:</strong> <span id="total-length-display">0</span></p>
+                <p class="text-gray-700 mb-2"><strong>Number of Panels (approx.):</strong> <span id="num-panels">0</span></p>
+                <p class="text-gray-700 mb-2"><strong>Subtotal (ex. VAT):</strong> £<span id="subtotal">0.00</span></p>
+                <p class="text-gray-700 mb-2"><strong>VAT (20%):</strong> £<span id="vat-amount">0.00</span></p>
+                <p class="text-lg font-bold text-green-700"><strong>Total Price (inc. VAT):</strong> £<span id="total-price">0.00</span></p>
+                <p class="text-sm text-gray-500 mt-4">
+                    <strong class="text-red-500">Disclaimer:</strong> All prices are estimates and subject to change. VAT is calculated at 20%.
+                </p>
+            </div>
+
+            <!-- Error Message Display -->
+            <div id="error-message" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mt-4 hidden" role="alert">
+                <strong class="font-bold">Error!</strong>
+                <span class="block sm:inline" id="error-text"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get DOM elements
+            const sideLengthInputs = [
+                document.getElementById('side1-length'),
+                document.getElementById('side2-length'),
+                document.getElementById('side3-length')
+            ];
+            const unitTypeRadios = document.querySelectorAll('input[name="unit-type"]');
+            const additionalLengthInputsDiv = document.getElementById('additional-length-inputs');
+            const panelTypeSelect = document.getElementById('panel-type');
+            const calculateBtn = document.getElementById('calculate-btn');
+            const resultsDiv = document.getElementById('results');
+            const totalLengthDisplay = document.getElementById('total-length-display');
+            const numPanelsSpan = document.getElementById('num-panels');
+            const subtotalSpan = document.getElementById('subtotal');
+            const vatAmountSpan = document.getElementById('vat-amount');
+            const totalPriceSpan = document.getElementById('total-price');
+            const errorMessageDiv = document.getElementById('error-message');
+            const errorTextSpan = document.getElementById('error-text');
+
+            // Constants for calculations
+            const PANEL_WIDTH_CM = 182.88; // 6 feet in cm
+            const FEET_TO_CM = 30.48;
+            const INCH_TO_CM = 2.54;
+            const METRE_TO_CM = 100;
+            const VAT_RATE = 0.20; // 20%
+
+            // Pricing data
+            const pricing = {
+                "close-board-concrete": { type: "panel", price: 150.00 },
+                "close-board-timber": { type: "panel", price: 120.00 },
+                "traditional-concrete": { type: "meter", price: 130.00 },
+                "traditional-timber": { type: "meter", price: 100.00 },
+                "overlap-concrete": { type: "panel", price: 120.00 },
+                "overlap-timber": { type: "panel", price: 100.00 }
+            };
+
+            /**
+             * Updates the additional length input fields based on the selected unit type.
+             * If 'feet-inches' is selected, adds inch input fields for each side.
+             * If 'metres-cm' is selected, adds cm input fields for each side.
+             */
+            function updateAdditionalLengthInputs() {
+                additionalLengthInputsDiv.innerHTML = ''; // Clear existing inputs
+                const selectedUnit = document.querySelector('input[name="unit-type"]:checked').value;
+
+                if (selectedUnit === 'feet-inches') {
+                    sideLengthInputs.forEach((input, index) => {
+                        const sideIndex = index + 1;
+                        const div = document.createElement('div');
+                        div.innerHTML = `
+                            <label for="side${sideIndex}-inches" class="block text-sm font-medium text-gray-700 mb-1">Side ${sideIndex} Inches (Optional)</label>
+                            <input type="number" id="side${sideIndex}-inches" placeholder="e.g., 6" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out">
+                        `;
+                        additionalLengthInputsDiv.appendChild(div);
+                    });
+                } else if (selectedUnit === 'metres-cm') {
+                    sideLengthInputs.forEach((input, index) => {
+                        const sideIndex = index + 1;
+                        const div = document.createElement('div');
+                        div.innerHTML = `
+                            <label for="side${sideIndex}-cm" class="block text-sm font-medium text-gray-700 mb-1">Side ${sideIndex} CM (Optional)</label>
+                            <input type="number" id="side${sideIndex}-cm" placeholder="e.g., 50" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out">
+                        `;
+                        additionalLengthInputsDiv.appendChild(div);
+                    });
+                }
+            }
+
+            /**
+             * Displays an error message and hides the results.
+             * @param {string} message - The error message to display.
+             */
+            function showErrorMessage(message) {
+                errorTextSpan.textContent = message;
+                errorMessageDiv.classList.remove('hidden');
+                resultsDiv.classList.add('hidden');
+            }
+
+            /**
+             * Hides the error message.
+             */
+            function hideErrorMessage() {
+                errorMessageDiv.classList.add('hidden');
+            }
+
+            /**
+             * Calculates the total fencing price based on user inputs.
+             */
+            function calculateFencingPrice() {
+                hideErrorMessage(); // Hide any previous error messages
+                let totalLengthCm = 0;
+                const selectedUnit = document.querySelector('input[name="unit-type"]:checked').value;
+                const selectedPanelType = panelTypeSelect.value;
+
+                // Validate panel type selection
+                if (!selectedPanelType) {
+                    showErrorMessage("Please select a fence panel type.");
+                    return;
+                }
+
+                // Calculate total length in CM
+                sideLengthInputs.forEach((mainInput, index) => {
+                    const mainValue = parseFloat(mainInput.value) || 0;
+                    let additionalValue = 0;
+
+                    if (selectedUnit === 'feet-inches') {
+                        const inchesInput = document.getElementById(`side${index + 1}-inches`);
+                        additionalValue = parseFloat(inchesInput ? inchesInput.value : 0) || 0;
+                        totalLengthCm += (mainValue * FEET_TO_CM) + (additionalValue * INCH_TO_CM);
+                    } else { // metres-cm
+                        const cmInput = document.getElementById(`side${index + 1}-cm`);
+                        additionalValue = parseFloat(cmInput ? cmInput.value : 0) || 0;
+                        totalLengthCm += (mainValue * METRE_TO_CM) + additionalValue;
+                    }
+                });
+
+                // Validate total length
+                if (totalLengthCm <= 0) {
+                    showErrorMessage("Please enter a valid fencing length greater than zero.");
+                    return;
+                }
+
+                const panelData = pricing[selectedPanelType];
+                let subtotal = 0;
+                let numPanels = 0;
+
+                if (panelData.type === "panel") {
+                    numPanels = Math.ceil(totalLengthCm / PANEL_WIDTH_CM);
+                    subtotal = numPanels * panelData.price;
+                } else { // type === "meter"
+                    // Convert total length from CM to meters for meter-based pricing
+                    const totalLengthMeters = totalLengthCm / METRE_TO_CM;
+                    subtotal = totalLengthMeters * panelData.price;
+                    numPanels = totalLengthCm / PANEL_WIDTH_CM; // Still calculate approximate panels for display
+                }
+
+                const vatAmount = subtotal * VAT_RATE;
+                const totalPrice = subtotal + vatAmount;
+
+                // Display results
+                totalLengthDisplay.textContent = `${(totalLengthCm / (selectedUnit === 'feet-inches' ? FEET_TO_CM : METRE_TO_CM)).toFixed(2)} ${selectedUnit === 'feet-inches' ? 'feet' : 'metres'}`;
+                numPanelsSpan.textContent = Math.ceil(numPanels); // Always round up for display
+                subtotalSpan.textContent = subtotal.toFixed(2);
+                vatAmountSpan.textContent = vatAmount.toFixed(2);
+                totalPriceSpan.textContent = totalPrice.toFixed(2);
+
+                resultsDiv.classList.remove('hidden'); // Show results
+            }
+
+            // Event Listeners
+            unitTypeRadios.forEach(radio => {
+                radio.addEventListener('change', updateAdditionalLengthInputs);
+            });
+
+            calculateBtn.addEventListener('click', calculateFencingPrice);
+
+            // Initial call to set up additional inputs based on default radio selection
+            updateAdditionalLengthInputs();
+        });
+    </script>
+</body>
+</html>
